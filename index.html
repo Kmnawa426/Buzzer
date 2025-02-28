@@ -58,11 +58,16 @@
 
         function getWorldTime() {
             const now = new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
+            let hours = now.getHours();
             const minutes = now.getMinutes().toString().padStart(2, '0');
             const seconds = now.getSeconds().toString().padStart(2, '0');
             const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
-            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12 || 12; // Convert 24-hour to 12-hour format
+            hours = hours.toString().padStart(2, '0'); 
+
+            return `${hours}:${minutes}:${seconds}.${milliseconds} ${ampm}`;
         }
 
         document.getElementById("buzzer").addEventListener("click", async () => {
