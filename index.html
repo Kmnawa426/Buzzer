@@ -21,9 +21,12 @@
     </style>
 </head>
 <body>
-    <h2>Enter Your Name:</h2>
-    <input type="text" id="username" placeholder="Your Name">
-    <button id="start">Start</button>
+    <div id="nameSection">
+        <h2>Enter Your Name:</h2>
+        <input type="text" id="username" placeholder="Your Name">
+        <button id="start">Next</button>
+    </div>
+
     <div class="buzzer" id="buzzer" style="display:none;">BUZZ</div>
 
     <script type="module">
@@ -49,9 +52,8 @@
                 return;
             }
 
-            document.getElementById("start").style.display = "none";
-            document.getElementById("username").style.display = "none";
-            document.getElementById("buzzer").style.display = "flex";
+            document.getElementById("nameSection").style.display = "none"; // Hide name input
+            document.getElementById("buzzer").style.display = "flex"; // Show buzzer
         });
 
         function getWorldTime() {
