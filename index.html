@@ -75,7 +75,7 @@
             // Store all users who clicked (sorted by time)
             push(allClicksRef, { name: username, time: clickTime });
 
-            // Store only the first clicker
+            // Store only the first clicker with their world clock time
             runTransaction(firstClickRef, (currentData) => {
                 if (currentData === null) {
                     return { name: username, time: clickTime };
