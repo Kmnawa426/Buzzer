@@ -9,14 +9,14 @@
         body { background-color: blue; text-align: center; color: white; font-family: Arial, sans-serif; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         input, button { padding: 15px; font-size: 18px; margin: 10px; }
         .buzzer {
-            width: 100vw; height: 100vh;
+            width: 50px; height: 50px;
             background-color: red; color: white;
             border-radius: 50%; display: flex;
             align-items: center; justify-content: center;
-            font-size: 40px; font-weight: bold;
+            font-size: 14px; font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            position: absolute; top: 0; left: 0;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -28,7 +28,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAgrTvhqiOpzHX2ktP44yxtf2y29UHkSN0",
@@ -40,7 +40,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let startTime;
         let clicked = false;
 
         document.getElementById("start").addEventListener("click", () => {
@@ -50,32 +49,44 @@
                 return;
             }
 
-            startTime = Date.now();
             document.getElementById("start").style.display = "none";
             document.getElementById("username").style.display = "none";
             document.getElementById("buzzer").style.display = "flex";
         });
+
+        function getWorldTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const milliseconds = now.getMilliseconds().toString().padStart(3, '0');
+            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+        }
 
         document.getElementById("buzzer").addEventListener("click", async () => {
             if (clicked) return; // Prevent multiple clicks
             clicked = true;
 
             const username = document.getElementById("username").value.trim();
-            const reactionTime = ((Date.now() - startTime) / 1000).toFixed(2); // In seconds
-            const buzzerRef = ref(db, "buzzers/first");
+            const clickTime = getWorldTime();
+            const firstClickRef = ref(db, "buzzers/first");
+            const allClicksRef = ref(db, "buzzers/all");
 
-            // Use a Firebase transaction to ensure only the first user is recorded
-            runTransaction(buzzerRef, (currentData) => {
+            // Store all users who clicked (sorted by time)
+            push(allClicksRef, { name: username, time: clickTime });
+
+            // Store only the first clicker
+            runTransaction(firstClickRef, (currentData) => {
                 if (currentData === null) {
-                    return { name: username, reactionTime: reactionTime };
+                    return { name: username, time: clickTime };
                 } else {
                     return undefined; // Don't overwrite existing data
                 }
             }).then((result) => {
                 if (result.committed) {
-                    alert(`You are the first! Reaction Time: ${reactionTime} seconds`);
+                    alert(`You are the first! Click Time: ${clickTime}`);
                 } else {
-                    alert("Someone already pressed first!");
+                    alert(`You clicked after the first! Click Time: ${clickTime}`);
                 }
             }).catch((error) => {
                 console.error("Transaction failed:", error);
